@@ -23,7 +23,7 @@ export default function App() {
 
   const fetchMyUrls = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/my-urls/${clientId}`);
+      const res = await fetch(`/api/my-urls/${clientId}`)
       const data = await res.json();
       if (res.ok) setHistory(data);
     } catch {}
@@ -44,7 +44,7 @@ export default function App() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/shorten", {
+      const res = await fetch("/api/shorten", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ longUrl, clientId }),
