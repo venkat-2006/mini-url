@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link2, Copy, Check, ExternalLink, TrendingUp } from "lucide-react";
 
+// API Configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mini-url-production.up.railway.app/api/v1';
+
 function getClientId() {
   let id = localStorage.getItem("clientId");
   if (!id) {
@@ -21,18 +24,25 @@ export default function App() {
 
   const clientId = getClientId();
 
+  // Fetch user's URLs
   const fetchMyUrls = async () => {
     try {
-      const res = await fetch(`/api/my-urls/${clientId}`)
-      const data = await res.json();
-      if (res.ok) setHistory(data);
-    } catch {}
+      const res = await fetch(`${API_BASE_URL}/urls/client/${clientId}`);
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
+        setHistory(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching URLs:', error);
+    }
   };
 
   useEffect(() => {
     fetchMyUrls();
   }, []);
 
+  // Create short URL
   const handleShorten = async () => {
     if (!longUrl.trim()) {
       setError("Please enter a URL");
@@ -44,22 +54,23 @@ export default function App() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/shorten", {
+      const res = await fetch(`${API_BASE_URL}/urls`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ longUrl, clientId }),
       });
 
-      const data = await res.json();
+      const result = await res.json();
 
-      if (!res.ok) {
-        setError(data.message || "Something went wrong");
+      if (!res.ok || !result.success) {
+        setError(result.message || "Something went wrong");
       } else {
-        setShortUrl(data.shortUrl);
+        setShortUrl(result.data.shortUrl);
         setLongUrl("");
         fetchMyUrls();
       }
     } catch (e) {
+      console.error('Error shortening URL:', e);
       setError("Backend not running / network error");
     }
 
